@@ -7,15 +7,18 @@
 using namespace std;
 
 void get_URL(const string &host, const string &path) {
-    // Your code here.
-
-    // You will need to connect to the "http" service on
-    // the computer whose name is in the "host" string,
-    // then request the URL path given in the "path" string.
-
-    // Then you'll need to print out everything the server sends back,
-    // (not just one call to read() -- everything) until you reach
-    // the "eof" (end of file).
+    Address addr( host, "http" );                    // 从hostname和service构造Address，address即服务器描述
+    TCPSocket socket;                                // 创建套接字
+    socket.connect( addr );                          // 通过套接字连接到服务器
+    socket.write( "GET " + path + " HTTP/1.1\r\n" ); // 通过套接字发送http请求
+    socket.write( "HOST: " + host + "\r\n" );
+    socket.write( "Connection: close\r\n" );
+    socket.write( "\r\n" );
+    while ( !socket.eof() ) { // 循环读取socket文件直到文件末尾
+        string buffer;
+        socket.read( buffer );
+        cout << buffer;
+    }
 
     cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
     cerr << "Warning: get_URL() has not been implemented yet.\n";
