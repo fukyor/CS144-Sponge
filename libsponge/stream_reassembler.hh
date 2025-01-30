@@ -2,6 +2,7 @@
 #define SPONGE_LIBSPONGE_STREAM_REASSEMBLER_HH
 
 #include "byte_stream.hh"
+#include <map>
 
 #include <cstdint>
 #include <string>
@@ -14,6 +15,11 @@ class StreamReassembler {
 
     ByteStream _output;  //!< The reassembled in-order byte stream
     size_t _capacity;    //!< The maximum number of bytes
+    size_t _next_assembled_idx{0}; // 下一个需要整流的起始字节位置，在此位置之前全部已经整流，并可以写入ByteStream准备发送给上层应用
+    std::map<uint64_t, std::string> _memo{}; // 存储未整流的数据
+    size_t _unassembled_bytes{0}; // 未整流的数据长度，也就是_memo的大小
+    size_t _eof_idx{}; // 最后一个字节的位置
+    bool _eof{false}; // 是否到达流的末尾
 
   public:
     //! \brief Construct a `StreamReassembler` that will store up to `capacity` bytes.
@@ -27,7 +33,7 @@ class StreamReassembler {
     //! Bytes that would exceed the capacity are silently discarded.
     //!
     //! \param data the substring
-    //! \param index indicates the index (place in sequence) of the first byte in `data`
+    //! \param index indicates the index (place in sequence) of the first byte in `data`,
     //! \param eof the last byte of `data` will be the last byte in the entire stream
     void push_substring(const std::string &data, const uint64_t index, const bool eof);
 
